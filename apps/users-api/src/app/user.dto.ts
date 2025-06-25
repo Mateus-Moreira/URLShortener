@@ -1,5 +1,1 @@
-export class UserDto {
-  id?: number;
-  name!: string;
-  email!: string;
-}
+// Removido, pois agora usamos a entidade User com TypeORM

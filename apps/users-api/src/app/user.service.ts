@@ -1,37 +1,59 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserDto } from './user.dto';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, EntityNotFoundError, QueryFailedError } from 'typeorm';
+import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
-  private users: UserDto[] = [];
-  private idCounter = 1;
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
-  create(user: UserDto): UserDto {
-    const newUser = { ...user, id: this.idCounter++ };
-    this.users.push(newUser);
-    return newUser;
+  async create(user: Partial<User>): Promise<User> {
+    const newUser = this.userRepository.create(user);
+    try {
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      if (error instanceof QueryFailedError && (error as any).code === '23505') {
+        // 23505 = unique_violation (Postgres)
+        throw new ConflictException('E-mail já cadastrado');
+      }
+      throw error;
+    }
   }
 
-  findAll(): UserDto[] {
-    return this.users;
+  findAll(): Promise<User[]> {
+    return this.userRepository.find();
   }
 
-  findOne(id: number): UserDto {
-    const user = this.users.find(u => u.id === id);
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+  async findOne(id: number): Promise<User> {
+    try {
+      return await this.userRepository.findOneByOrFail({ id });
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Usuário não encontrado');
+      }
+      throw error;
+    }
   }
 
-  update(id: number, user: UserDto): UserDto {
-    const idx = this.users.findIndex(u => u.id === id);
-    if (idx === -1) throw new NotFoundException('User not found');
-    this.users[idx] = { ...this.users[idx], ...user, id };
-    return this.users[idx];
+  async update(id: number, user: Partial<User>): Promise<{ message: string; user?: User }> {
+    const result = await this.userRepository.update(id, user);
+    if (result.affected && result.affected > 0) {
+      const updatedUser = await this.findOne(id);
+      return { message: 'Usuário atualizado com sucesso', user: updatedUser };
+    } else {
+      throw new NotFoundException('Usuário não encontrado');
+    }
   }
 
-  remove(id: number): void {
-    const idx = this.users.findIndex(u => u.id === id);
-    if (idx === -1) throw new NotFoundException('User not found');
-    this.users.splice(idx, 1);
+  async remove(id: number): Promise<{ message: string }> {
+    const result = await this.userRepository.delete(id);
+    if (result.affected && result.affected > 0) {
+      return { message: 'Usuário deletado com sucesso' };
+    } else {
+      throw new NotFoundException('Usuário não encontrado');
+    }
   }
 }
