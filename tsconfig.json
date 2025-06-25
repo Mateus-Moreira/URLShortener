@@ -8,6 +8,12 @@
     },
     {
       "path": "./apps/urlshortener"
+    },
+    {
+      "path": "./apps/users-api-e2e"
+    },
+    {
+      "path": "./apps/users-api"
     }
   ]
 }
