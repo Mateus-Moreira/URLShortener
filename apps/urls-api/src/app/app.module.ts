@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UrlController } from './url.controller';
 import { UrlService } from './url.service';
 import { Url } from './url.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -17,8 +19,12 @@ import { Url } from './url.entity';
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Url]),
+    JwtModule.register({
+      secret: 'sua_chave_secreta',
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
   controllers: [UrlController],
-  providers: [UrlService],
+  providers: [UrlService, JwtStrategy],
 })
 export class AppModule {}

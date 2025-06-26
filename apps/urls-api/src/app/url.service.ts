@@ -52,6 +52,12 @@ export class UrlService {
     return url;
   }
 
+  async findOneByShortUrl(shortUrl: string): Promise<Url> {
+    const url = await this.urlRepository.findOneBy({ shortUrl });
+    if (!url) throw new NotFoundException('URL não encontrada');
+    return url;
+  }
+
   async update(id: number, url: Partial<Url>): Promise<{ message: string; url?: Url }> {
     const result = await this.urlRepository.update(id, url);
     if (result.affected && result.affected > 0) {

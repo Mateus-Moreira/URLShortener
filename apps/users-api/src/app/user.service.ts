@@ -1,16 +1,20 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { User } from './user.entity';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(forwardRef(() => AuthService))
+    private authService: AuthService,
   ) {}
 
   async create(user: Partial<User>): Promise<User> {
+    user.password = await this.authService.hashPassword(user.password!);
     const newUser = this.userRepository.create(user);
     try {
       return await this.userRepository.save(newUser);
