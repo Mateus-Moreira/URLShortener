@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  postgres_users:
+    image: postgres:latest
+    container_name: urlshortener_postgres_users
+    restart: always
+    environment:
+      POSTGRES_DB: usersDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata_users:/var/lib/postgresql/data
+
+  postgres_urls:
+    image: postgres:latest
+    container_name: urlshortener_postgres_urls
+    restart: always
+    environment:
+      POSTGRES_DB: urlsDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5434:5432'
+    volumes:
+      - pgdata_urls:/var/lib/postgresql/data
+
+volumes:
+  pgdata_users:
+  pgdata_urls:
