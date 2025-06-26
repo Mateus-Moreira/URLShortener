@@ -14,7 +14,7 @@ import { User } from './user.entity';
       port: 5433,
       username: 'postgres',
       password: 'postgres',
-      database: 'urlshortener',
+      database: 'usersDB',
       entities: [User],
       synchronize: true,
     }),
