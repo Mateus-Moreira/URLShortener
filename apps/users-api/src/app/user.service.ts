@@ -43,6 +43,10 @@ export class UserService {
   }
 
   async update(id: number, user: Partial<User>): Promise<{ message: string; user?: User }> {
+    // Se for enviada uma nova senha, hasheia antes de atualizar
+    if (user.password) {
+      user.password = await this.authService.hashPassword(user.password);
+    }
     const result = await this.userRepository.update(id, user);
     if (result.affected && result.affected > 0) {
       const updatedUser = await this.findOne(id);

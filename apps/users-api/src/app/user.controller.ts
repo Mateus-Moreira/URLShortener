@@ -1,6 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import type { Request } from 'express';
+
 
 @Controller('users')
 export class UserController {
@@ -24,6 +27,17 @@ export class UserController {
   @Put(':id')
   update(@Param('id') id: string, @Body() user: Partial<User>) {
     return this.userService.update(Number(id), user);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId || isNaN(Number(userId))) {
+      throw new Error('ID de usuário inválido');
+    }
+    return this.userService.findOne(Number(userId));
   }
 
   @Delete(':id')
