@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, BadRequestException, Req, UseGuards } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { Url } from './url.entity';
-import { OptionalJwtAuthGuard } from './optional-jwt-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 import type { Request } from 'express';
 
 @Controller('urls')
@@ -9,55 +9,51 @@ export class UrlController {
     constructor(private readonly urlService: UrlService) { }
 
     @Post()
-    @UseGuards(OptionalJwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     create(@Body() url: Partial<Url>, @Req() req: Request) {
         if (!url.originalUrl) {
             throw new BadRequestException('originalUrl é obrigatório');
         }
-        // Tenta pegar o id do usuário autenticado, se houver
+        // Pega o id do usuário autenticado
         const userId = (req as any).user?.userId;
         return this.urlService.create({
             originalUrl: url.originalUrl,
-            userId: userId ?? undefined
+            userId: userId
         });
     }
 
     @Get()
-    findAll() {
-        return this.urlService.findAll();
+    @UseGuards(JwtAuthGuard)
+    findAll(@Req() req: Request) {
+        const userId = (req as any).user?.userId;
+        return this.urlService.findAllByUser(userId);
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.urlService.findOne(Number(id));
+    @UseGuards(JwtAuthGuard)
+    async findOne(@Param('id') id: string, @Req() req: Request) {
+        const userId = (req as any).user?.userId;
+        return this.urlService.findOneByUser(Number(id), userId);
     }
 
     @Get('short/:shortUrl')
     async findByShortUrl(@Param('shortUrl') shortUrl: string) {
-        const url = await this.urlService.findOneByShortUrl(shortUrl);
+        const url = await this.urlService.findOneByShortUrlAndIncrement(shortUrl);
         if (!url) throw new BadRequestException('URL não encontrada');
         return url;
     }
 
     @Put(':id')
-    @UseGuards(OptionalJwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     async update(@Param('id') id: string, @Body() url: Partial<Url>, @Req() req: Request) {
         const userId = (req as any).user?.userId;
-        const urlData = await this.urlService.findOne(Number(id));
-        if (!userId || urlData.userId !== userId) {
-            throw new BadRequestException('Você não tem permissão para atualizar esta URL');
-        }
-        return this.urlService.update(Number(id), url);
+        return this.urlService.updateByUser(Number(id), url, userId);
     }
 
     @Delete(':id')
-    @UseGuards(OptionalJwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     async remove(@Param('id') id: string, @Req() req: Request) {
         const userId = (req as any).user?.userId;
-        const urlData = await this.urlService.findOne(Number(id));
-        if (!userId || urlData.userId !== userId) {
-            throw new BadRequestException('Você não tem permissão para deletar esta URL');
-        }
-        return this.urlService.remove(Number(id));
+        return this.urlService.removeByUser(Number(id), userId);
     }
 }

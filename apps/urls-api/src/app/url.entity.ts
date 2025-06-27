@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class Url {
@@ -13,4 +13,16 @@ export class Url {
 
   @Column({ nullable: true })
   userId?: number;
+
+  @Column({ default: 0 })
+  accessCount!: number;
+
+  @CreateDateColumn()
+  created_at!: Date;
+
+  @UpdateDateColumn()
+  updated_at!: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deleted_at?: Date;
 }

@@ -5,7 +5,7 @@ export default async function RedirectPage(props: { params: Promise<{ shortUrl?:
   if (!shortUrl) {
     redirect("/");
   }
-  const res = await fetch(`http://localhost:3002/api/urls/short/${shortUrl}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URLS_URL}/urls/short/${shortUrl}`);
   if (!res.ok) {
     redirect("/");
   }

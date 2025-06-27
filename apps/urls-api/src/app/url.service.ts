@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError, IsNull } from 'typeorm';
 import { Url } from './url.entity';
 
 function generateShortUrl(length = 6) {
@@ -46,15 +46,27 @@ export class UrlService {
     return this.urlRepository.find();
   }
 
+  async findAllByUser(userId: number): Promise<Url[]> {
+    return this.urlRepository.find({ where: { userId, deleted_at: IsNull() } });
+  }
+
   async findOne(id: number): Promise<Url> {
     const url = await this.urlRepository.findOneBy({ id });
     if (!url) throw new NotFoundException('URL não encontrada');
     return url;
   }
 
-  async findOneByShortUrl(shortUrl: string): Promise<Url> {
+  async findOneByUser(id: number, userId: number): Promise<Url> {
+    const url = await this.urlRepository.findOne({ where: { id, userId, deleted_at: IsNull() } });
+    if (!url) throw new NotFoundException('URL não encontrada ou não pertence ao usuário');
+    return url;
+  }
+
+  async findOneByShortUrlAndIncrement(shortUrl: string): Promise<Url> {
     const url = await this.urlRepository.findOneBy({ shortUrl });
     if (!url) throw new NotFoundException('URL não encontrada');
+    url.accessCount = (url.accessCount ?? 0) + 1;
+    await this.urlRepository.save(url);
     return url;
   }
 
@@ -68,12 +80,18 @@ export class UrlService {
     }
   }
 
-  async remove(id: number): Promise<{ message: string }> {
-    const result = await this.urlRepository.delete(id);
-    if (result.affected && result.affected > 0) {
-      return { message: 'URL deletada com sucesso' };
-    } else {
-      throw new NotFoundException('URL não encontrada');
-    }
+  async updateByUser(id: number, url: Partial<Url>, userId: number): Promise<{ message: string; url?: Url }> {
+    const existing = await this.urlRepository.findOne({ where: { id, userId, deleted_at: IsNull() } });
+    if (!existing) throw new NotFoundException('URL não encontrada ou não pertence ao usuário');
+    await this.urlRepository.update(id, url);
+    const updatedUrl = await this.findOne(id);
+    return { message: 'URL atualizada com sucesso', url: updatedUrl };
+  }
+
+  async removeByUser(id: number, userId: number): Promise<{ message: string }> {
+    const existing = await this.urlRepository.findOne({ where: { id, userId, deleted_at: IsNull() } });
+    if (!existing) throw new NotFoundException('URL não encontrada ou não pertence ao usuário');
+    await this.urlRepository.softDelete(id);
+    return { message: 'URL deletada com sucesso' };
   }
 }
