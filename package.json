@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "setup": "npm install && docker-compose up -d",
+    "setup": "npm install && docker compose up -d",
     "dev": "concurrently \"nx run urlshortener:dev\" \"nx run users-api:serve\" \"nx run urls-api:serve\"",
-    "down": "docker-compose down"
+    "down": "docker compose down"
   },
   "private": true,
   "dependencies": {
