@@ -10,17 +10,17 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5434,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'urlsDB',
+      host: process.env.URLS_API_DB_HOST,
+      port: Number(process.env.URLS_API_DB_PORT),
+      username: process.env.URLS_API_DB_USERNAME,
+      password: process.env.URLS_API_DB_PASSWORD,
+      database: process.env.URLS_API_DB_DATABASE,
       autoLoadEntities: true,
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Url]),
     JwtModule.register({
-      secret: 'sua_chave_secreta',
+      secret: process.env.URLS_API_JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
   ],

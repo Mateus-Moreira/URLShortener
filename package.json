@@ -2,7 +2,11 @@
   "name": "@urlshortener/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "setup": "npm install && docker-compose up -d",
+    "dev": "concurrently \"nx run urlshortener:dev\" \"nx run users-api:serve\" \"nx run urls-api:serve\"",
+    "down": "docker-compose down"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -52,6 +56,7 @@
     "@types/react-dom": "19.0.0",
     "autoprefixer": "10.4.13",
     "babel-jest": "^29.7.0",
+    "concurrently": "^9.2.0",
     "cypress": "^14.2.1",
     "eslint": "^9.8.0",
     "eslint-config-next": "^15.2.4",

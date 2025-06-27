@@ -5,11 +5,11 @@ services:
     container_name: urlshortener_postgres_users
     restart: always
     environment:
-      POSTGRES_DB: usersDB
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${USERS_API_DB_DATABASE:-usersDB}
+      POSTGRES_USER: ${USERS_API_DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${USERS_API_DB_PASSWORD:-postgres}
     ports:
-      - '5433:5432'
+      - '${USERS_API_DB_PORT:-5433}:5432'
     volumes:
       - pgdata_users:/var/lib/postgresql/data
 
@@ -18,11 +18,11 @@ services:
     container_name: urlshortener_postgres_urls
     restart: always
     environment:
-      POSTGRES_DB: urlsDB
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${URLS_API_DB_DATABASE:-urlsDB}
+      POSTGRES_USER: ${URLS_API_DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${URLS_API_DB_PASSWORD:-postgres}
     ports:
-      - '5434:5432'
+      - '${URLS_API_DB_PORT:-5434}:5432'
     volumes:
       - pgdata_urls:/var/lib/postgresql/data
 

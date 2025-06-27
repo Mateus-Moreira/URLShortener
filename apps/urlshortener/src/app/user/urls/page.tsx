@@ -21,7 +21,7 @@ export default function UserUrlsPage() {
             return;
         }
         // Busca o userId do usuário logado
-        fetch("http://localhost:3001/api/auth/me", {
+        fetch(process.env.NEXT_PUBLIC_API_USERS_URL + "/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(async (res) => {
@@ -35,13 +35,17 @@ export default function UserUrlsPage() {
     const fetchUrls = () => {
         const token = Cookies.get("token");
         if (!token || userId === null) return;
-        fetch("http://localhost:3002/api/urls", {
+        fetch(process.env.NEXT_PUBLIC_API_URLS_URL + '/urls', {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(async (res) => {
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                setUrls(data.filter((url: any) => url.userId === userId));
+                setUrls(
+                    data
+                        .filter((url: any) => url.userId === userId)
+                        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                );
             })
             .catch(() => setError("Erro ao carregar URLs"));
     };
@@ -72,7 +76,7 @@ export default function UserUrlsPage() {
         const newUrl = editUrls[id];
         if (!newUrl) return;
         try {
-            const res = await fetch(`http://localhost:3002/api/urls/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URLS_URL}/urls/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -90,6 +94,27 @@ export default function UserUrlsPage() {
         }
     };
 
+    const handleDelete = async (id: number) => {
+        if (!confirm("Tem certeza que deseja deletar esta URL?")) return;
+        setError("");
+        setSuccess("");
+        const token = Cookies.get("token");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URLS_URL}/urls/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!res.ok) throw new Error();
+            setSuccess("URL deletada com sucesso!");
+            fetchUrls();
+        } catch {
+            setError("Erro ao deletar URL");
+        }
+    };
+
     return (
         <div className="min-h-screen flex bg-gray-50 relative">
             <UserSidebar active="urls" />
@@ -104,50 +129,74 @@ export default function UserUrlsPage() {
                             <li className="py-4 text-center">Nenhum URL encontrado.</li>
                         )}
                         {urls.map((url) => (
-                            <li
-                                key={url.id}
-                                className="py-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2"
-                            >
-                                <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                                    {editMode[url.id] ? (
-                                        <>
+                            <div key={url.id}>
+                                <li
+                                    className="py-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2"
+                                >
+                                    <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                                        {editMode[url.id] ? (
+                                            <>
+                                                <div className="flex flex-col gap-1">
+                                                    <button
+                                                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                                                        onClick={() => handleEditSave(url.id)}
+                                                    >
+                                                        Salvar
+                                                    </button>
+                                                    <button
+                                                        className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition"
+                                                        onClick={() => handleEditCancel(url.id)}
+                                                    >
+                                                        Cancelar
+                                                    </button>
 
-                                            <button
-                                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                                                onClick={() => handleEditSave(url.id)}
-                                            >
-                                                Salvar
-                                            </button>
-                                            <button
-                                                className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition"
-                                                onClick={() => handleEditCancel(url.id)}
-                                            >
-                                                Cancelar
-                                            </button>
-                                            <input
-                                                type="text"
-                                                className="border rounded px-2 py-1 flex-1"
-                                                value={editUrls[url.id]}
-                                                onChange={(e) => handleEditChange(url.id, e.target.value)}
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button
-                                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                                                onClick={() => handleEditClick(url.id, url.originalUrl)}
-                                            >
-                                                Editar
-                                            </button>
-                                            <span className="break-all">{url.originalUrl}</span>
-                                        </>
-                                    )}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    className="border rounded px-2 py-1 flex-1"
+                                                    value={editUrls[url.id]}
+                                                    onChange={(e) => handleEditChange(url.id, e.target.value)}
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex flex-col gap-1">
+                                                    <button
+                                                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                                                        onClick={() => handleEditClick(url.id, url.originalUrl)}
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    {!editMode[url.id] && (
+                                                        <button
+                                                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition mt-1"
+                                                            onClick={() => handleDelete(url.id)}
+                                                        >
+                                                            Deletar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <span className="break-all">{url.originalUrl}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <span className="text-blue-600 break-all">
+                                        {typeof window !== "undefined" ? window.location.origin : ""}/
+                                        {url.shortUrl}
+                                    </span>
+                                    <span className="text-gray-700 text-sm min-w-[80px] text-center">
+                                        Acessos: {url.accessCount ?? 0}
+                                    </span>
+                                </li>
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full">
+                                    <div className="text-gray-500 text-xs min-w-[120px] text-right md:text-right ml-auto">
+                                        Atualizada: 
+                                        {url.updated_at
+                                            ? new Date(new Date(url.updated_at).getTime() - 3 * 60 * 60 * 1000).toLocaleString('pt-BR')
+                                            : '-'}
+                                    </div>
                                 </div>
-                                <span className="text-blue-600 break-all">
-                                    {typeof window !== "undefined" ? window.location.origin : ""}/
-                                    {url.shortUrl}
-                                </span>
-                            </li>
+                            </div>
                         ))}
                     </ul>
                 </div>

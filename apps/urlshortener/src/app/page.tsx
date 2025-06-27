@@ -6,6 +6,8 @@ import Cookies from 'js-cookie';
 export default function Index() {
   const [originalUrl, setOriginalUrl] = useState('');
   const [message, setMessage] = useState('');
+  const [shortUrl, setShortUrl] = useState('');
+  const [copied, setCopied] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
   const router = useRouter();
 
@@ -22,23 +24,36 @@ export default function Index() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
+    setShortUrl('');
+    setCopied(false);
     try {
       const token = Cookies.get('token');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const res = await fetch('http://localhost:3002/api/urls', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URLS_URL + '/urls', {
         method: 'POST',
         headers,
         body: JSON.stringify({ originalUrl }),
       });
       if (!res.ok) throw new Error('Erro ao encurtar URL');
       const data = await res.json();
-      setMessage(`URL encurtada: ${window.location.origin}/${data.shortUrl}`);
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/${data.shortUrl}`;
+      setMessage('URL encurtada:');
+      setShortUrl(url);
       setOriginalUrl('');
     } catch (err) {
       setMessage('Erro ao encurtar URL');
+      setShortUrl('');
+    }
+  };
+
+  const handleCopy = async () => {
+    if (shortUrl) {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
   };
 
@@ -87,7 +102,29 @@ export default function Index() {
             Encurtar URL
           </button>
         </form>
-        {message && <div className="mt-4 text-center text-green-600">{message}</div>}
+        {message && (
+          <div className="mt-4 text-center text-green-600 flex flex-col items-center gap-2">
+            <span>{message}</span>
+            {shortUrl && (
+              <div className="flex items-center gap-2 justify-center">
+                <input
+                  type="text"
+                  value={shortUrl}
+                  readOnly
+                  className="border rounded px-2 py-1 w-56 text-center bg-gray-100"
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleCopy}
+                />
+                <button
+                  onClick={handleCopy}
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition text-sm"
+                >
+                  {copied ? 'Copiado!' : 'Copiar'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

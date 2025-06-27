@@ -15,17 +15,17 @@ import { JwtAuthGuard } from './jwt-auth.guard';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5433,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'usersDB',
+      host: process.env.USERS_API_DB_HOST,
+      port: Number(process.env.USERS_API_DB_PORT),
+      username: process.env.USERS_API_DB_USERNAME,
+      password: process.env.USERS_API_DB_PASSWORD,
+      database: process.env.USERS_API_DB_DATABASE,
       autoLoadEntities: true,
       synchronize: true,
     }),
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
-      secret: 'sua_chave_secreta',
+      secret: process.env.USERS_API_JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
   ],
