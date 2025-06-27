@@ -82,6 +82,7 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 - O botão "Copiar" aparece após gerar uma URL encurtada.
 - Todas as rotas protegidas exigem JWT (token salvo em cookie).
 - O sistema está pronto para desenvolvimento local e fácil deploy via Docker Compose.
+- Na raiz do projeto existe um arquivo chamado UrlShortener.postman_collection.json, você pode importar ele para o postman, e irá carregar todas as rotas do projeto. :)
 
 ---
 
