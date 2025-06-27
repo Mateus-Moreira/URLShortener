@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "setup": "npm install && docker compose up -d",
-    "dev": "concurrently \"nx run urlshortener:dev\" \"nx run users-api:serve\" \"nx run urls-api:serve\"",
+    "dev": "cross-env NX_INTERACTIVE=false concurrently \"nx run urlshortener:dev\" \"nx run users-api:serve\" \"nx run urls-api:serve\"",
     "down": "docker compose down"
   },
   "private": true,
@@ -58,6 +58,7 @@
     "autoprefixer": "10.4.13",
     "babel-jest": "^29.7.0",
     "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
     "cypress": "^14.2.1",
     "eslint": "^9.8.0",
     "eslint-config-next": "^15.2.4",
