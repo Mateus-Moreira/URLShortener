@@ -1,101 +1,88 @@
-# Urlshortener
+# URL Shortener Monorepo
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Este projeto é um sistema completo de encurtador de URLs, com autenticação JWT, frontend em Next.js e backends em NestJS (users-api e urls-api). O sistema permite registro, login, gerenciamento de URLs, redirecionamento, e contagem de acessos.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Estrutura do Projeto
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- **apps/urlshortener**: Frontend (Next.js)
+- **apps/users-api**: API de usuários (NestJS)
+- **apps/urls-api**: API de URLs (NestJS)
 
-## Run tasks
+## Funcionalidades
+- Registro e login de usuários (JWT)
+- CRUD de usuário
+- Encurtamento de URLs (autenticado ou anônimo)
+- Listagem, edição e deleção (soft delete) de URLs do usuário
+- Redirecionamento automático
+- Contagem de acessos
+- Navegação clara e responsiva
+- Botão "Copiar" para URL gerada
 
-To run the dev server for your app, use:
+## Rotas Principais
 
-```sh
-npx nx dev urlshortener
+### Frontend (Next.js)
+- `/` — Tela principal para encurtar URLs
+- `/login` — Login
+- `/register` — Cadastro
+- `/user` — Dados do usuário
+- `/user/urls` — Gerenciamento de URLs do usuário
+- `/[shortUrl]` — Redirecionamento automático
+
+### API de Usuários (`users-api`)
+- `POST /api/auth/register` — Cadastro
+- `POST /api/auth/login` — Login
+- `GET /api/auth/me` — Dados do usuário autenticado
+- `PUT /api/users/:id` — Atualizar usuário
+- `DELETE /api/users/:id` — Soft delete usuário
+
+### API de URLs (`urls-api`)
+- `POST /api/urls` — Encurtar URL
+- `GET /api/urls` — Listar URLs do usuário autenticado
+- `PUT /api/urls/:id` — Editar URL
+- `DELETE /api/urls/:id` — Soft delete URL
+- `GET /:shortUrl` — Redirecionamento e contagem de acesso
+
+## Variáveis de Ambiente
+
+Configure o arquivo `.env` na raiz com as variáveis necessárias para banco, JWT, CORS, URLs e portas. Exemplos:
+
+```
+USERS_API_PORT=3001
+URLS_API_PORT=3002
+CORS_ORIGIN=http://localhost:3000
+JWT_SECRET=algumseguro
+DATABASE_URL=postgres://user:pass@db:5432/urlshortener
+NEXT_PUBLIC_API_USERS_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URLS_URL=http://localhost:3002/api
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-To create a production bundle:
+## Como Executar
 
-```sh
-npx nx build urlshortener
-```
+1. **Instale as dependências e suba o banco:**
+   ```sh
+   npm run setup
+   ```
+2. **Suba todos os serviços (frontend e backends):**
+   ```sh
+   npm run dev
+   ```
+3. **Acesse:**
+   - Frontend: http://localhost:3000
+   - Users API: http://localhost:3001/api
+   - URLs API: http://localhost:3002/api
 
-To see all available targets to run for a project, run:
+4. **Limpar banco de dados (remove todos os dados):**
+   ```sh
+   docker-compose down -v
+   ```
 
-```sh
-npx nx show project urlshortener
-```
+## Observações
+- O frontend consome as APIs usando as variáveis de ambiente configuradas.
+- O botão "Copiar" aparece após gerar uma URL encurtada.
+- Todas as rotas protegidas exigem JWT (token salvo em cookie).
+- O sistema está pronto para desenvolvimento local e fácil deploy via Docker Compose.
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+---
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/next:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/react:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+> Projeto desenvolvido com Nx, Next.js, NestJS, Docker, JWT e TailwindCSS.
