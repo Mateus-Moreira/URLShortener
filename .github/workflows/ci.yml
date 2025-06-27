@@ -36,5 +36,11 @@ jobs:
       - name: Run setup script
         run: npm run setup
 
-      - name: Run dev script
-        run: npm run dev
+      - name: Build frontend
+        run: npx nx build urlshortener
+
+      - name: Build users-api
+        run: npx nx build users-api
+
+      - name: Build urls-api
+        run: npx nx build urls-api
