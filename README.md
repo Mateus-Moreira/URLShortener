@@ -59,6 +59,8 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 ## Como Executar
 
+0. **Tenha o docker aberto**
+
 1. **Instale as dependências e suba o banco:**
    ```sh
    npm run setup
