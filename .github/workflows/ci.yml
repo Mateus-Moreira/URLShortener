@@ -33,24 +33,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Run setup script
+        run: npm run setup
 
-      - name: Wait for Postgres
-        run: |
-          until pg_isready -h localhost -p 5432; do
-            sleep 1
-          done
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgres://user:pass@localhost:5432/urlshortener
-          JWT_SECRET: algumseguro
-          CORS_ORIGIN: http://localhost:3000
-          NEXT_PUBLIC_API_USERS_URL: http://localhost:3001/api
-          NEXT_PUBLIC_API_URLS_URL: http://localhost:3002/api
-          NEXT_PUBLIC_BASE_URL: http://localhost:3000
-        run: npx nx run-many --target=test --all
-
-      - name: Run lint
-        run: npx nx run-many --target=lint --all
+      - name: Run dev script
+        run: npm run dev
